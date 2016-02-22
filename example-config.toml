@@ -1,3 +1,5 @@
+# Whether to start a web server to serve the mirrors.  Defaults to true
+ServeMirror = true
 # ListenAddr is the address the web server listens on for serving the mirrors.
 # Defaults to :8080
 ListenAddr   = ":8080"
@@ -6,13 +8,18 @@ ListenAddr   = ":8080"
 Interval     = "15m"
 # Base path for storing mirrors, absolute or relative.  Defaults to "."
 BasePath = "/tmp/mirror"
+# Path to the SSH private key for pushing to target repositories.
+# Defaults to "~/.ssh/id_rsa"
+KeyPath = "~/.ssh/id_rsa"
 
 # An example of a public mirror taking defaults from above.  The Name is
 # generated from the URL by just taking the host and path.
 #
-# Will be mirrored at at http://localhost:8080/github.com/beefsack/git-mirror.git
+# Will be mirrored at at http://localhost:8080/github.com/NexZhu/git-mirror.git
+# and mirrored to git@github.com:NexMirror/git-mirror.git
 [[Repo]]
-Origin = "https://github.com/beefsack/git-mirror.git"
+Origin = "https://github.com/NexZhu/git-mirror.git"
+Target = "git@github.com:NexMirror/git-mirror.git"
 
 # Repos whose Origin is not a URL is simplified to the last part after any @
 # symbol with any : symbol converted to a /
