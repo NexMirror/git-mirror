@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -37,9 +38,15 @@ func main() {
 	}
 
 	// Run HTTP server to serve mirrors.
-	http.Handle("/", http.FileServer(http.Dir(cfg.BasePath)))
-	log.Printf("starting web server on %s", cfg.ListenAddr)
-	if err := http.ListenAndServe(cfg.ListenAddr, nil); err != nil {
-		log.Fatalf("failed to start server, %s", err)
+	if cfg.ServeMirror {
+		http.Handle("/", http.FileServer(http.Dir(cfg.BasePath)))
+		log.Printf("starting web server on %s", cfg.ListenAddr)
+		if err := http.ListenAndServe(cfg.ListenAddr, nil); err != nil {
+			log.Fatalf("failed to start server, %s", err)
+		}
+	} else {
+		wg := sync.WaitGroup{}
+		wg.Add(1)
+		wg.Wait()
 	}
 }

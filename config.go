@@ -1,10 +1,12 @@
 package main
 
 import (
-	"path/filepath"
 	"fmt"
 	"io/ioutil"
 	"net/url"
+	"os"
+	"os/user"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -16,15 +18,18 @@ type duration struct {
 }
 
 type config struct {
-	ListenAddr string
-	Interval   duration
-	BasePath   string
-	Repo       []repo
+	ServeMirror bool
+	ListenAddr  string
+	Interval    duration
+	BasePath    string
+	KeyPath     string
+	Repo        []repo
 }
 
 type repo struct {
 	Name     string
 	Origin   string
+	Target   string
 	Interval duration
 }
 
@@ -40,23 +45,48 @@ func parseConfig(filename string) (cfg config, repos map[string]repo, err error)
 		err = fmt.Errorf("unable to read config file %s, %s", filename, err)
 		return
 	}
-	if _, err = toml.Decode(string(raw), &cfg); err != nil {
+	var meta toml.MetaData
+	if meta, err = toml.Decode(string(raw), &cfg); err != nil {
 		err = fmt.Errorf("unable to load config %s, %s", filename, err)
 		return
 	}
 
 	// Set defaults if required.
+	if !meta.IsDefined("ServeMirror") {
+		cfg.ServeMirror = true
+	}
 	if cfg.ListenAddr == "" {
 		cfg.ListenAddr = ":8080"
 	}
 	if cfg.Interval.Duration == 0 {
 		cfg.Interval.Duration = 15 * time.Minute
 	}
+	userHome := "/root"
+	if user, err := user.Current(); err == nil {
+		userHome = user.HomeDir
+	}
 	if cfg.BasePath == "" {
 		cfg.BasePath = "."
 	}
-	if cfg.BasePath, err = filepath.Abs(cfg.BasePath); err != nil {
+	if cfg.BasePath[0] == '~' {
+		cfg.BasePath = userHome + cfg.BasePath[1:]
+	} else if cfg.BasePath, err = filepath.Abs(cfg.BasePath); err != nil {
 		err = fmt.Errorf("unable to get absolute path to base path, %s", err)
+		return
+	}
+	if cfg.KeyPath[0] == '~' {
+		cfg.KeyPath = userHome + cfg.KeyPath[1:]
+	} else if cfg.KeyPath, err = filepath.Abs(cfg.KeyPath); err != nil {
+		err = fmt.Errorf("unable to get absolute path to key path, %s", err)
+		return
+	}
+
+	if _, err = os.Stat(cfg.KeyPath); os.IsNotExist(err) {
+		err = fmt.Errorf("%s does not exists", cfg.KeyPath)
+		return
+	} else if err = ioutil.WriteFile("git-ssh", []byte("ssh -i " + cfg.KeyPath + " \"$@\""), 0777); err != nil {
+		err = fmt.Errorf("failed to create git-ssh")
+		return
 	}
 
 	// Fetch repos, injecting default values where needed.
@@ -67,7 +97,7 @@ func parseConfig(filename string) (cfg config, repos map[string]repo, err error)
 	repos = map[string]repo{}
 	for i, r := range cfg.Repo {
 		if r.Origin == "" {
-			err = fmt.Errorf("Origin required for repo %d in config %s", i+1, filename)
+			err = fmt.Errorf("Origin required for repo %d in config %s", i + 1, filename)
 			return
 		}
 
@@ -78,7 +108,7 @@ func parseConfig(filename string) (cfg config, repos map[string]repo, err error)
 			} else {
 				parts := strings.Split(r.Origin, "@")
 				if l := len(parts); l > 0 {
-					r.Name = strings.Replace(parts[l-1], ":", "/", -1)
+					r.Name = strings.Replace(parts[l - 1], ":", "/", -1)
 				}
 			}
 		}
