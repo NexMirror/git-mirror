@@ -103,10 +103,14 @@ func parseConfig(filename string) (cfg config, repos map[string]repo, err error)
 
 		// Generate a name if there isn't one already
 		if r.Name == "" {
-			if u, err := url.Parse(r.Origin); err == nil && u.Scheme != "" {
+			origin := r.Origin
+			if strings.HasPrefix(r.Origin, "hg::") {
+				origin = origin[4:]
+			}
+			if u, err := url.Parse(origin); err == nil && u.Scheme != "" {
 				r.Name = u.Host + u.Path
 			} else {
-				parts := strings.Split(r.Origin, "@")
+				parts := strings.Split(origin, "@")
 				if l := len(parts); l > 0 {
 					r.Name = strings.Replace(parts[l - 1], ":", "/", -1)
 				}

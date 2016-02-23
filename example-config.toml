@@ -21,6 +21,11 @@ KeyPath = "~/.ssh/id_rsa"
 Origin = "https://github.com/NexZhu/git-mirror.git"
 Target = "git@github.com:NexMirror/git-mirror.git"
 
+# Also supports mirroring Mercurial repositories into Git repositories via git-remote-hg
+[[Repo]]
+Origin = "hg::https://bitbucket.org/scons/scons"
+Target = "git@github.com:NexMirror/SCons.git"
+
 # Repos whose Origin is not a URL is simplified to the last part after any @
 # symbol with any : symbol converted to a /
 #

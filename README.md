@@ -1,14 +1,20 @@
 # git-mirror - simple Git mirrors
 
 `git-mirror` is designed to create and serve read-only mirrors of your Git repositories locally or wherever you choose.
-This fork also supports syncing between the source repositories and the mirrors hosted elsewhere, e.g., from Bitbucket to GitHub.
 A recent GitHub outage reinforces the fact that developers shouldn't be relying on a single remote for hosting code.
 
 A major design goal of `git-mirror` is that it should just work with as little configuration as possible.
 
+This fork has the following additional features:
+- Sync between the source repositories and the mirrors hosted elsewhere, e.g., from Bitbucket to GitHub
+- Mirror Mercurial repositories into Git repositories via [git-remote-hg](https://github.com/fingolfin/git-remote-hg)
+
 ## Get started
 
 Download and compile the source code.
+
+If you want to mirror Mercurial repositories, you also need to set up [git-remote-hg](https://github.com/fingolfin/git-remote-hg)
+according to its instruction.
 
 Create `config.toml` similar to:
 
