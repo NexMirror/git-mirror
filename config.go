@@ -114,6 +114,7 @@ func parseConfig(filename string) (cfg config, repos map[string]repo, err error)
 			if u, err := url.Parse(origin); err == nil && u.Scheme != "" {
 				r.Name = u.Host + u.Path
 			} else {
+				// Deal with origins like git@github.com:NexZhu/git-mirror
 				parts := strings.Split(origin, "@")
 				if l := len(parts); l > 0 {
 					r.Name = strings.Replace(parts[l-1], ":", "/", -1)

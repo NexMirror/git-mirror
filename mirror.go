@@ -6,33 +6,18 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
-	"regexp"
 )
-
-var target *regexp.Regexp
-
-func init() {
-	target = regexp.MustCompile("(?m)^target$")
-}
 
 func mirror(cfg config, r repo) error {
 	var cmd *exec.Cmd
 	repoPath := path.Join(cfg.BasePath, r.Name)
 
-	if checkRemoteTarget(repoPath) {
-		cmd = exec.Command("git", "remote", "remove", "target")
-		cmd.Dir = repoPath
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to remove remote %s, %s", r.Target, err)
-		}
-	}
-
 	if _, err := os.Stat(repoPath); err == nil {
 		// Directory exists, update.
-		cmd = exec.Command("git", "remote", "update")
+		cmd = exec.Command("git", "fetch", "-p", "origin")
 		cmd.Dir = repoPath
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to update remote in %s, %s", repoPath, err)
+			return fmt.Errorf("failed to fetch origin in %s: %s", repoPath, err)
 		}
 	} else if os.IsNotExist(err) {
 		// Clone
@@ -43,47 +28,42 @@ func mirror(cfg config, r repo) error {
 		cmd = exec.Command("git", "clone", "--mirror", r.Origin, repoPath)
 		cmd.Dir = parent
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to clone %s, %s", r.Origin, err)
+			return fmt.Errorf("failed to clone %s: %s", r.Origin, err)
 		}
 	} else {
-		return fmt.Errorf("failed to stat %s, %s", repoPath, err)
+		return fmt.Errorf("failed to stat %s: %s", repoPath, err)
 	}
 
-	cmd = exec.Command("git", "update-server-info")
-	cmd.Dir = repoPath
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to update-server-info for %s, %s", repoPath, err)
+	if cfg.ServeMirror {
+		cmd = exec.Command("git", "update-server-info")
+		cmd.Dir = repoPath
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to update-server-info for %s： %s", repoPath, err)
+		}
 	}
 
 	if r.Target != "" {
-		if !checkRemoteTarget(repoPath) {
-			cmd = exec.Command("git", "remote", "add", "--mirror=push", "target", r.Target)
-			cmd.Dir = repoPath
-			if err := cmd.Run(); err != nil {
-				return fmt.Errorf("failed to add remote %s, %s", r.Target, err)
-			}
+		// git remote set-url --push origin
+		cmd := exec.Command("git", "remote", "set-url", "--push", "origin", r.Target)
+		cmd.Dir = repoPath
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("failed to set target url to %s for %s: %s", r.Target, repoPath, err)
 		}
 
+		// git push --mirror --quiet
 		gitSshPath, err := filepath.Abs("git-ssh")
 		if err != nil {
-			return fmt.Errorf("unable to get absolute path to git-ssh, %s", err)
+			return fmt.Errorf("unable to get absolute path to git-ssh: %s", err)
 		}
-		cmd = exec.Command("git", "push", "target")
+		cmd = exec.Command("git", "push", "--mirror", "--quiet")
 		cmd.Dir = repoPath
 		env := os.Environ()
-		env = append(env, "GIT_SSH=" + gitSshPath)
+		env = append(env, "GIT_SSH="+gitSshPath)
 		cmd.Env = env
 		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("failed to push to %s, %s", r.Target, err)
+			return fmt.Errorf("failed to push to %s for %s: %s", r.Target, repoPath, err)
 		}
 	}
 
 	return nil
-}
-
-func checkRemoteTarget(repoPath string) bool {
-	cmd := exec.Command("git", "remote")
-	cmd.Dir = repoPath
-	output, _ := cmd.Output()
-	return string(target.Find(output)) == "target"
 }

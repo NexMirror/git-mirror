@@ -24,12 +24,17 @@ func main() {
 	}
 
 	// Run background threads to keep mirrors up to date.
+	wg := sync.WaitGroup{}
 	for _, r := range repos {
+		wg.Add(1)
 		go func(r repo) {
+			defer wg.Done()
 			for {
 				log.Printf("updating %s", r.Name)
 				if err := mirror(cfg, r); err != nil {
 					log.Printf("error updating %s, %s", r.Name, err)
+				} else if r.Target != "" {
+					log.Printf("updated %s (pushed to %s)", r.Name, r.Target)
 				} else {
 					log.Printf("updated %s", r.Name)
 				}
@@ -49,11 +54,9 @@ func main() {
 		if err := http.ListenAndServe(cfg.ListenAddr, nil); err != nil {
 			log.Fatalf("failed to start server, %s", err)
 		}
-	} else {
-		wg := sync.WaitGroup{}
-		wg.Add(1)
-		wg.Wait()
 	}
+
+	wg.Wait()
 }
 
 func handleGitClone(cfg config, next http.Handler) http.Handler {
