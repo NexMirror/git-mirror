@@ -78,8 +78,16 @@ func parseConfig(filename string) (cfg config, repos map[string]repo, err error)
 		err = fmt.Errorf("unable to get absolute path to base path, %s", err)
 		return
 	}
+	if cfg.KeyPath == "" {
+		cfg.KeyPath = "~/.ssh/id_rsa"
+	}
 	if cfg.KeyPath[0] == '~' {
-		cfg.KeyPath = userHome + cfg.KeyPath[1:]
+		var u *user.User
+		if u, err = user.Current(); err != nil {
+			err = fmt.Errorf("unable to get current user, %s", err)
+			return
+		}
+		cfg.KeyPath = u.HomeDir + cfg.KeyPath[1:]
 	} else if cfg.KeyPath, err = filepath.Abs(cfg.KeyPath); err != nil {
 		err = fmt.Errorf("unable to get absolute path to key path, %s", err)
 		return
