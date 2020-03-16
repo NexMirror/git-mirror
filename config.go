@@ -19,6 +19,7 @@ type duration struct {
 
 type config struct {
 	ServeMirror bool
+	AutoClone   bool
 	ListenAddr  string
 	Interval    duration
 	BasePath    string
@@ -54,6 +55,9 @@ func parseConfig(filename string) (cfg config, repos map[string]repo, err error)
 	// Set defaults if required.
 	if !meta.IsDefined("ServeMirror") {
 		cfg.ServeMirror = true
+	}
+	if !meta.IsDefined("AutoClone") {
+		cfg.AutoClone = false
 	}
 	if cfg.ListenAddr == "" {
 		cfg.ListenAddr = ":8080"

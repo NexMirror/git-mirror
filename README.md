@@ -6,8 +6,9 @@ A recent GitHub outage reinforces the fact that developers shouldn't be relying 
 A major design goal of `git-mirror` is that it should just work with as little configuration as possible.
 
 This fork has the following additional features:
-- Sync between the source repositories and the mirrors hosted elsewhere, e.g., from Bitbucket to GitHub
 - Mirror Mercurial repositories into Git repositories via [git-remote-hg](https://github.com/fingolfin/git-remote-hg)
+- Optionally sync between the source repositories and the mirrors hosted elsewhere, e.g., from Bitbucket to GitHub
+- Optionally automatically clone repositories from origin when requested repositories don't exist
 
 ## Get started
 
@@ -43,6 +44,8 @@ $ git clone http://localhost:8080/github.com/beefsack/git-mirror.git
 Cloning into 'git-mirror'...
 Checking connectivity... done.
 ```
+
+
 
 ## Advanced configuration
 
