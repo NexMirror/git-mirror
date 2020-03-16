@@ -6,9 +6,11 @@ A recent GitHub outage reinforces the fact that developers shouldn't be relying 
 A major design goal of `git-mirror` is that it should just work with as little configuration as possible.
 
 This fork has the following additional features:
-- Mirror Mercurial repositories into Git repositories via [git-remote-hg](https://github.com/fingolfin/git-remote-hg)
+- Mirror Mercurial repositories into Git repositories via [git-remote-hg](https://github.com/felipec/git-remote-hg)
 - Optionally sync between the source repositories and the mirrors hosted elsewhere, e.g., from Bitbucket to GitHub
 - Optionally automatically clone repositories from origin when requested repositories don't exist
+
+// TODO: Consider switching to: https://github.com/cosmin/git-hg
 
 ## Get started
 

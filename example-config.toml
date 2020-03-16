@@ -5,10 +5,10 @@ ServeMirror = true
 AutoClone = false
 # ListenAddr is the address the web server listens on for serving the mirrors.
 # Defaults to :8080
-ListenAddr   = ":8080"
+ListenAddr = ":8080"
 # Interval is the default interval for updating mirrors, can be overridden per
 # repository.  Defaults to 15 minutes.
-Interval     = "15m"
+Interval = "15m"
 # Base path for storing mirrors, absolute or relative.  Defaults to "."
 BasePath = "/tmp/mirror"
 # Path to the SSH private key for pushing to target repositories.
@@ -26,8 +26,8 @@ Target = "git@github.com:NexMirror/git-mirror.git"
 
 # Also supports mirroring Mercurial repositories into Git repositories via git-remote-hg
 [[Repo]]
-Origin = "hg::https://bitbucket.org/scons/scons"
-Target = "git@github.com:NexMirror/SCons.git"
+Origin = "hg::https://www.octave.org/hg/octave"
+Target = "git@github.com:NexMirror/Octave.git"
 
 # Repos whose Origin is not a URL is simplified to the last part after any @
 # symbol with any : symbol converted to a /
