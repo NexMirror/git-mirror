@@ -11,9 +11,8 @@ ListenAddr = ":8080"
 Interval = "15m"
 # Base path for storing mirrors, absolute or relative.  Defaults to "."
 BasePath = "/tmp/mirror"
-# Path to the SSH private key for pushing to target repositories.
-# Defaults to "~/.ssh/id_rsa"
-KeyPath = "~/.ssh/id_rsa"
+# Optional path to the SSH private key for pushing to target repositories.
+# KeyPath = "~/.ssh/id_rsa"
 
 # An example of a public mirror taking defaults from above.  The Name is
 # generated from the URL by just taking the host and path.

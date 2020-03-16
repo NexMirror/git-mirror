@@ -51,15 +51,17 @@ func mirror(cfg config, r repo) error {
 		}
 
 		// git push --mirror --quiet
-		gitSshPath, err := filepath.Abs("git-ssh")
-		if err != nil {
-			return fmt.Errorf("unable to get absolute path to git-ssh: %s", err)
-		}
 		cmd = exec.Command("git", "push", "--mirror", "--quiet")
 		cmd.Dir = repoPath
-		env := os.Environ()
-		env = append(env, "GIT_SSH="+gitSshPath)
-		cmd.Env = env
+		if cfg.KeyPath != "" {
+			gitSshPath, err := filepath.Abs("git-ssh")
+			if err != nil {
+				return fmt.Errorf("unable to get absolute path to git-ssh: %s", err)
+			}
+			env := os.Environ()
+			env = append(env, "GIT_SSH="+gitSshPath)
+			cmd.Env = env
+		}
 		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("failed to push to %s for %s: %s", r.Target, repoPath, err)
 		}

@@ -78,27 +78,27 @@ func parseConfig(filename string) (cfg config, repos map[string]repo, err error)
 		err = fmt.Errorf("unable to get absolute path to base path, %s", err)
 		return
 	}
-	if cfg.KeyPath == "" {
-		cfg.KeyPath = "~/.ssh/id_rsa"
-	}
-	if cfg.KeyPath[0] == '~' {
-		var u *user.User
-		if u, err = user.Current(); err != nil {
-			err = fmt.Errorf("unable to get current user, %s", err)
+
+	if cfg.KeyPath != "" {
+		if cfg.KeyPath[0] == '~' {
+			var u *user.User
+			if u, err = user.Current(); err != nil {
+				err = fmt.Errorf("unable to get current user, %s", err)
+				return
+			}
+			cfg.KeyPath = u.HomeDir + cfg.KeyPath[1:]
+		} else if cfg.KeyPath, err = filepath.Abs(cfg.KeyPath); err != nil {
+			err = fmt.Errorf("unable to get absolute path to key path, %s", err)
 			return
 		}
-		cfg.KeyPath = u.HomeDir + cfg.KeyPath[1:]
-	} else if cfg.KeyPath, err = filepath.Abs(cfg.KeyPath); err != nil {
-		err = fmt.Errorf("unable to get absolute path to key path, %s", err)
-		return
-	}
 
-	if _, err = os.Stat(cfg.KeyPath); os.IsNotExist(err) {
-		err = fmt.Errorf("%s does not exists", cfg.KeyPath)
-		return
-	} else if err = ioutil.WriteFile("git-ssh", []byte("ssh -i "+cfg.KeyPath+" \"$@\""), 0777); err != nil {
-		err = fmt.Errorf("failed to create git-ssh")
-		return
+		if _, err = os.Stat(cfg.KeyPath); os.IsNotExist(err) {
+			err = fmt.Errorf("%s does not exists", cfg.KeyPath)
+			return
+		} else if err = ioutil.WriteFile("git-ssh", []byte("ssh -i "+cfg.KeyPath+" \"$@\""), 0777); err != nil {
+			err = fmt.Errorf("failed to create git-ssh")
+			return
+		}
 	}
 
 	// Fetch repos, injecting default values where needed.
