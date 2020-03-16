@@ -84,7 +84,7 @@ func parseConfig(filename string) (cfg config, repos map[string]repo, err error)
 	if _, err = os.Stat(cfg.KeyPath); os.IsNotExist(err) {
 		err = fmt.Errorf("%s does not exists", cfg.KeyPath)
 		return
-	} else if err = ioutil.WriteFile("git-ssh", []byte("ssh -i " + cfg.KeyPath + " \"$@\""), 0777); err != nil {
+	} else if err = ioutil.WriteFile("git-ssh", []byte("ssh -i "+cfg.KeyPath+" \"$@\""), 0777); err != nil {
 		err = fmt.Errorf("failed to create git-ssh")
 		return
 	}
@@ -97,7 +97,7 @@ func parseConfig(filename string) (cfg config, repos map[string]repo, err error)
 	repos = map[string]repo{}
 	for i, r := range cfg.Repo {
 		if r.Origin == "" {
-			err = fmt.Errorf("Origin required for repo %d in config %s", i + 1, filename)
+			err = fmt.Errorf("Origin required for repo %d in config %s", i+1, filename)
 			return
 		}
 
@@ -112,7 +112,7 @@ func parseConfig(filename string) (cfg config, repos map[string]repo, err error)
 			} else {
 				parts := strings.Split(origin, "@")
 				if l := len(parts); l > 0 {
-					r.Name = strings.Replace(parts[l - 1], ":", "/", -1)
+					r.Name = strings.Replace(parts[l-1], ":", "/", -1)
 				}
 			}
 		}
